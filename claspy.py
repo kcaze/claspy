@@ -290,13 +290,14 @@ def optimize_basic_rule(head, literals):
 
 start_time = time()  # time when the library is loaded
 solution = None  # set containing indices of true variables
-def solve():
+def solve(quiet=False):
     """Solves for all defined variables.  If satisfiable, returns True
     and stores the solution so that variables can print out their
     values."""
     global last_bool, solution, debug_constraints, last_update
 
-    print 'Solving', last_bool, 'variables,', len(clasp_rules), 'rules'
+    if not quiet:
+        print 'Solving', last_bool, 'variables,', len(clasp_rules), 'rules'
 
     clasp_process = subprocess.Popen(CLASP_COMMAND.split(),
                                      stdin=subprocess.PIPE,
@@ -331,17 +332,18 @@ def solve():
             if verbose: print line.rstrip()
         else:
             clasp_output.append(line.rstrip())
-    if 'SATISFIABLE' in clasp_output: print 'SATISFIABLE'
-    elif 'UNSATISFIABLE' in clasp_output: print 'UNSATISFIABLE'
-    else: print '\n'.join(clasp_output)  # show info if there was an error
-    print
-    print 'Total time: %.2fs' % (time() - start_time)
-    print
-    if solution and debug_constraints:
-        for x, s in debug_constraints:
-            if not x.value():
-                print "Failed constraint:", s
+    if not quiet:
+        if 'SATISFIABLE' in clasp_output: print 'SATISFIABLE'
+        elif 'UNSATISFIABLE' in clasp_output: print 'UNSATISFIABLE'
+        else: print '\n'.join(clasp_output)  # show info if there was an error
         print
+        print 'Total time: %.2fs' % (time() - start_time)
+        print
+        if solution and debug_constraints:
+            for x, s in debug_constraints:
+                if not x.value():
+                    print "Failed constraint:", s
+            print
     last_update = time()  # reset for future searches
     return found_solution
 
