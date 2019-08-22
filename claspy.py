@@ -190,12 +190,12 @@ def required(x, debug_str):
     debug_constraints.append((x,debug_str))
 
 clasp_rules = None
-def add_rule(vals):
+def add_rule(vals, quiet=True):
     """The rule is encoded as a series of integers, according to the
     SMODELS internal format.  See lparse.pdf pp.86 (pdf p.90)."""
     global clasp_rules
     clasp_rules.append(vals)
-    if need_update():
+    if need_update() and not quiet:
         print len(clasp_rules), 'rules'
 
 def lit2str(literals):
