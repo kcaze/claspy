@@ -3,6 +3,7 @@ from parser import parse
 import json
 
 def main(encodedBoard):
+  set_bits(8)
   puzzle = parse(encodedBoard)
   height = len(puzzle)
   width = len(puzzle[0])
@@ -14,7 +15,7 @@ def main(encodedBoard):
     for x in range(width):
       cell = puzzle[y][x]
       if cell is not None:
-        require(horizontalFences[y][x] + horizontalFences[y+1][x] + verticalFences[x][y] + verticalFences[x+1][y] == cell)
+        require(sum_bools(cell, [horizontalFences[y][x], horizontalFences[y+1][x], verticalFences[x][y], verticalFences[x+1][y]]))
   
   # Require that each node has 2 or 0 edges connecting it. This ensures the lines form loop(s) that don't self-intersect.
   for y in range(height+1):
@@ -26,21 +27,12 @@ def main(encodedBoard):
         verticalFences[x][y] if y < height else None,
       ]
       fences = [f for f in fences if f is not None]
-      s = fences[0]
-      for i in range(1, len(fences)):
-        s += fences[i]
-      require((s == 2) | (s == 0))
+      require(sum_bools(2, fences) | sum_bools(0, fences))
   
   # A grid of atoms for the outside of the loop, proved through flood fill from the a 1 square border padding.
-  outside = [[Atom() for i in range(width+2)] for j in range(height+2)]
-  for y in range(height+2):
-   outside[y][0].prove_if(True)
-   outside[y][width+1].prove_if(True)
-  for x in range(width+2):
-   outside[0][x].prove_if(True)
-   outside[height+1][x].prove_if(True)
-  for y in range(height+2):
-   for x in range(width+2):
+  outside = [[True if i == 0 or i == width+1 or j == 0 or j == height+1 else Atom() for i in range(width+2)] for j in range(height+2)]
+  for y in range(1,height+1):
+   for x in range(1, width+1):
      if x-1 >= 0 and y-1 < height and y-1 >= 0:
        outside[y][x].prove_if(outside[y][x-1] & ~verticalFences[x-1][y-1])
      if x < width+1 and y-1 < height and y-1 >= 0:
@@ -55,32 +47,26 @@ def main(encodedBoard):
   for y in range(height+1):
     for x in range(width+1):
       if x < width:
-        require(~(horizontalFences[y][x] ^ outside[y][x+1] ^ outside[y+1][x+1]))
+        require(cond(horizontalFences[y][x], outside[y][x+1] ^ outside[y+1][x+1], True))
       if y < height:
-        require(~(verticalFences[x][y] ^ outside[y+1][x] ^ outside[y+1][x+1]))
+        require(cond(verticalFences[x][y], outside[y+1][x] ^ outside[y+1][x+1], True))
   
   # Require winding number is 1 so that the inside is one connected region.
-  # windingNumber is set to 1000 initially for calculations so that we can subtract without going
+  # windingNumber is set to 128 initially for calculations so that we can subtract without going
   # negative since IntVar's are non-negative
-  windingNumber = IntVar(1000)
+  cw = [[BoolVar() for i in range(width+1)] for j in range(height+1)] 
+  ccw = [[BoolVar() for i in range(width+1)] for j in range(height+1)] 
   for y in range(height+1):
     for x in range(width+1):
       fences = [
-        horizontalFences[y][x-1] if x > 0 else None,
-        verticalFences[x][y-1] if y > 0 else None,
-        horizontalFences[y][x] if x < width else None,
-        verticalFences[x][y] if y < height else None,
+        horizontalFences[y][x-1] if x > 0 else False,
+        verticalFences[x][y-1] if y > 0 else False,
+        horizontalFences[y][x] if x < width else False,
+        verticalFences[x][y] if y < height else False,
       ]
-      fences = [f if f is not None else False for f in fences]
-      windingNumber = cond(outside[y][x] & fences[0] & fences[1], windingNumber - 1, windingNumber)
-      windingNumber = cond(~outside[y][x] & fences[0] & fences[1], windingNumber + 1, windingNumber)
-      windingNumber = cond(outside[y][x+1] & fences[1] & fences[2], windingNumber - 1, windingNumber)
-      windingNumber = cond(~outside[y][x+1] & fences[1] & fences[2], windingNumber + 1, windingNumber)
-      windingNumber = cond(outside[y+1][x+1] & fences[2] & fences[3], windingNumber - 1, windingNumber)
-      windingNumber = cond(~outside[y+1][x+1] & fences[2] & fences[3], windingNumber + 1, windingNumber)
-      windingNumber = cond(outside[y+1][x] & fences[3] & fences[0], windingNumber - 1, windingNumber)
-      windingNumber = cond(~outside[y+1][x] & fences[3] & fences[0], windingNumber + 1, windingNumber)
-  require(windingNumber == 1004)
+      require(cw[y][x] == ((fences[0] & ((~outside[y][x] & fences[1]) | (~outside[y+1][x] & fences[3]))) | (fences[2] & ((~outside[y][x+1] & fences[1]) | (~outside[y+1][x+1] & fences[3])))))
+      require(ccw[y][x] == ((fences[0] & ((outside[y][x] & fences[1]) | (outside[y+1][x] & fences[3]))) | (fences[2] & ((outside[y][x+1] & fences[1]) | (outside[y+1][x+1] & fences[3])))))
+  require(sum_vars(sum(cw,[])) - sum_vars(sum(ccw,[])) == 4)
   
   solve(quiet=True)
   print json.dumps({'horizontalFences': [[int(str(f)) for f in r] for r in horizontalFences], 'verticalFences': [[int(str(f)) for f in r] for r in verticalFences]})

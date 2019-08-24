@@ -508,7 +508,7 @@ def set_bits(n):
     global NUM_BITS, BITS
     if last_bool > 2:  # true/false already defined
         raise RuntimeError("Can't change number of bits after defining variables")
-    print 'Setting integers to', n, 'bits'
+    #print 'Setting integers to', n, 'bits'
     NUM_BITS = n
     BITS = range(NUM_BITS)
 
