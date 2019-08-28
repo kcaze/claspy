@@ -2,19 +2,30 @@ import math
 import re
 
 class Board:
-    def __init__(self, cols, rows):
-        self.cell = initCell(cols, rows)
-        self.border = initBorder(cols, rows)
-        self.cols = cols
-        self.rows = rows
+  def __init__(self, cols, rows):
+    self.cell = initCell(cols, rows)
+    self.border = initBorder(cols, rows)
+    self.cols = cols
+    self.rows = rows
     
-    def getCell(self, x, y):
-        return self.cell[y*self.cols + x]
+  def getCell(self, x, y):
+    return self.cell[y*self.cols + x]
 
 class Base:
+  NO_SOLUTIONS = 0
+  UNIQUE_SOLUTION = 1
+  MULTIPLE_SOLUTIONS = 2
+
   def __init__(self, url):
     self.decodeURL(url)
     self.decode()
+  
+  def solve(self):
+    (solution_type, solution) = self._solve()
+    return {
+      'solutionType': solution_type,
+      'solution': solution
+    }
 
   def decodeURL(self, url):
       (self.pid, self.cols, self.rows, self.body, self.pflag) = parseURL(url)
