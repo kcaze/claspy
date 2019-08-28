@@ -3,9 +3,7 @@ import os
 import signal
 import sys
 
-import slither
-import starbattle
-import sudoku
+import variety
 
 TIMEOUT = 10
 def handle_timeout(_signum, _frame):
@@ -14,12 +12,10 @@ os.setpgrp()
 signal.signal(signal.SIGALRM, handle_timeout)
 signal.alarm(TIMEOUT)
 
-inputObject = json.loads(sys.argv[1])
-if inputObject['puzzleName'] == 'sudoku':
-  sudoku.main(inputObject['encodedBoard'])
-elif inputObject['puzzleName'] == 'slither':
-  slither.main(inputObject['encodedBoard'])
-elif inputObject['puzzleName'] == 'starbattle':
-  starbattle.main(inputObject['encodedBoard'])
+encodedURL = sys.argv[1]
+pid = variety.getPid(encodedURL)
+if pid in variety.solvers:
+  solver = variety.solvers[pid](encodedURL)
+  solver.solve()
 else:
-  print "Unsupported puzzle"
+  print "Unsupported puzzle type %s" % pid
