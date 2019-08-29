@@ -63,7 +63,7 @@
 import subprocess
 from time import time, strftime
 
-CLASP_COMMAND = 'clasp --sat-prepro --eq=1 --trans-ext=dynamic'
+CLASP_COMMAND = 'clasp --sat-prepro --eq=1 --trans-ext=dynamic 2'
 
 
 ################################################################################
@@ -320,15 +320,14 @@ def solve(quiet=False):
     if clasp_process.stdout is None:  # debug mode
         return
     clasp_process.stdin.close()
-    found_solution = False
+    num_solutions = 0
     clasp_output = []
     for line in clasp_process.stdout:
         if line.startswith('c Answer:'):
             solution = set()
         if line[0] == 'v':  # this is a solution line
-            assert not found_solution
+            num_solutions += 1
             solution = set(map(lambda s: int(s[1:]), line.rstrip().split(' ')))
-            found_solution = True
             if verbose: print line.rstrip()
         else:
             clasp_output.append(line.rstrip())
@@ -345,7 +344,7 @@ def solve(quiet=False):
                     print "Failed constraint:", s
             print
     last_update = time()  # reset for future searches
-    return found_solution
+    return num_solutions
 
 
 ################################################################################

@@ -13,12 +13,12 @@ class Sudoku(Base):
       for x in range(9):
         if self.board.getCell(x,y) is not None:
           require(ans[y][x] == self.board.getCell(x,y))
-    solvable = solve(quiet=True)
-    if not solvable:
+    num_solutions = solve(quiet=True)
+    if num_solutions == 0:
       return (Base.NO_SOLUTIONS, None)
     else:
       solution = [int(str(ans[i/9][i%9])) for i in range(81)]
-      return (Base.UNIQUE_SOLUTION, solution)
+      return (Base.UNIQUE_SOLUTION if num_solutions == 1 else Base.MULTIPLE_SOLUTIONS, solution)
 
   def decode(self):
     self.decodeNumber16()
