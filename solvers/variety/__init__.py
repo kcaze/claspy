@@ -1,7 +1,10 @@
 from _base_ import parseURL
+
+import slither
 import sudoku
 
 solvers = {
+  'slither': slither.Slither,
   'sudoku': sudoku.Sudoku,
 }
 

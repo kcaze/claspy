@@ -21,7 +21,8 @@ class Base:
     self.decode()
   
   def solve(self):
-    (solution_type, solution) = self._solve()
+    (num_solutions, solution) = self._solve()
+    solution_type = Base.NO_SOLUTIONS if num_solutions == 0 else Base.UNIQUE_SOLUTION if num_solutions == 1 else Base.MULTIPLE_SOLUTIONS
     return {
       'solutionType': solution_type,
       'solution': solution
@@ -30,6 +31,30 @@ class Base:
   def decodeURL(self, url):
       (self.pid, self.cols, self.rows, self.body, self.pflag) = parseURL(url)
       self.board = Board(self.cols, self.rows)
+
+  def decode4Cell(self):
+    c = 0
+    i = 0
+    bstr = self.body
+    bd = self.board
+    for i in range(len(bstr)):
+      ca = bstr[i]
+      if include(ca, "0", "4"):
+        bd.cell[c] = int(ca, 16)
+      elif include(ca, "5", "9"):
+        bd.cell[c] = int(ca, 16) - 5
+        c += 1
+      elif include(ca, "a", "e"):
+        bd.cell[c] = int(ca,16)-10
+        c += 2
+      elif include(ca, "g", "z"):
+        c += int(ca, 36) - 16
+      elif ca == ".":
+        bd.cell[c] = -2
+      c += 1
+      if c >= len(bd.cell):
+        break
+    self.body = self.body[i+1:]
 
   def decodeNumber16(self):
       bstr = self.body
