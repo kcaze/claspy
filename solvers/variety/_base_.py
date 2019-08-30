@@ -85,6 +85,32 @@ class Base:
               break
       self.body = self.body[i+1:]
 
+  def decodeBorder(self):
+    pos1 = 0
+    pos2 = 0
+    bstr = self.body
+    twi = [16,8,4,2,1]
+    bd = self.board
+    if bstr != "":
+      pos1 = min(((self.cols-1)*self.rows+4)/5, len(bstr))
+      pos2 = min((self.cols*(self.rows-1)+4)/5 + pos1, len(bstr))
+    id_ = 0
+    for i in range(pos1):
+      ca = int(bstr[i], 32)
+      for w in range(5):
+        if id_ < (self.cols-1)*self.rows:
+          self.board.border[1][id_ / (self.cols-1)][id_ % (self.cols-1)] = 1 if ca & twi[w] != 0 else 0
+          id_ += 1
+    id_ = 0
+    for i in range(pos1, pos2):
+      ca = int(bstr[i], 32)
+      for w in range(5):
+        if id_ < self.cols*(self.rows-1):
+          self.board.border[0][id_ / self.rows][id_ % self.rows] = 1 if ca & twi[w] != 0 else 0
+          id_ += 1
+    self.body = self.body[pos2:]
+  
+
 def include(ca, bottom, up):
     return bottom <= ca and ca <= up
 
@@ -92,8 +118,8 @@ def initCell(cols, rows):
     return [None for i in range(cols*rows)]
 
 def initBorder(cols, rows):
-    horizontals = [[False for c in range(cols)] for r in range(rows+1)]
-    verticals = [[False for r in range(rows)] for c in range(cols+1)]
+    horizontals = [[False for c in range(cols)] for r in range(rows-1)]
+    verticals = [[False for r in range(cols-1)] for c in range(rows)]
     return (horizontals, verticals)
 
 def parseURL(url):
