@@ -17,31 +17,30 @@ class Starbattle(Base):
       for x in range(self.cols):
         threeByThree = [stars[y+dy][x+dx] if 0 <= y+dy < self.rows and 0 <= x+dx < self.cols else False for (dx,dy) in list(itertools.product([-1,0,1], [-1,0,1]))]
         require(cond(stars[y][x], sum_bools(1, threeByThree), True))
-    # starCount stars per region. The technique used here is adopted from the fillimino example:
-    # https://github.com/danyq/claspy/blob/master/examples/fillomino.py
-    groups = utils.makeGrid(self.cols, self.rows, lambda: IntVar(0, self.cols*self.rows))
-    roots = utils.makeGrid(self.cols, self.rows, lambda: BoolVar())
-    groupAtoms = utils.makeGrid(self.cols, self.rows, lambda: Atom())
-    for y in range(self.rows-1):
-      for x in range(self.cols):
-        if self.board.border[0][y][x]:
-          require(groups[y][x] != groups[y+1][x])
-        else:
-          groupAtoms[y][x].prove_if(groupAtoms[y+1][x])
-          groupAtoms[y+1][x].prove_if(groupAtoms[y][x])
-          require(groups[y][x] == groups[y+1][x])
-    for y in range(self.rows):
-      for x in range(self.cols-1):
-        if self.board.border[1][y][x]:
-          require(groups[y][x] != groups[y][x+1])
-        else:
-          groupAtoms[y][x].prove_if(groupAtoms[y][x+1])
-          groupAtoms[y][x+1].prove_if(groupAtoms[y][x])
-          require(groups[y][x] == groups[y][x+1])
+    # starCount stars per region.
+    usedInRegion = utils.makeGrid(self.cols, self.rows, lambda: False)
     for y in range(self.rows):
       for x in range(self.cols):
-        groupAtoms[y][x].prove_if(stars[y][x])
-        require(groupAtoms[y][x])
+        if usedInRegion[y][x]: continue 
+        toProcess = [(x,y)]
+        region = []
+        while len(toProcess):
+          newToProcess = [] 
+          for p in toProcess:
+            usedInRegion[p[1]][p[0]] = True
+            region.append(stars[p[1]][p[0]])
+          for p in toProcess:
+            if p[0] - 1 >= 0 and not usedInRegion[p[1]][p[0]-1] and not self.board.border[1][p[1]][p[0]-1]:
+              newToProcess.append((p[0]-1,p[1]))
+            if p[0] + 1 < self.cols and not usedInRegion[p[1]][p[0]+1] and not self.board.border[1][p[1]][p[0]]:
+              newToProcess.append((p[0]+1,p[1]))
+            if p[1] - 1 >= 0 and not usedInRegion[p[1]-1][p[0]] and not self.board.border[0][p[1]-1][p[0]]:
+              newToProcess.append((p[0],p[1]-1))
+            if p[1] + 1 < self.rows and not usedInRegion[p[1]+1][p[0]] and not self.board.border[0][p[1]][p[0]]:
+              newToProcess.append((p[0],p[1]+1))
+          toProcess = list(set(newToProcess))
+        require(sum_bools(self.starCount, region))
+        
     num_solutions = solve(quiet=True)
     solution = [[utils.intify(x) for x in r] for r in stars]
     return (num_solutions, solution)
