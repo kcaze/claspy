@@ -1,9 +1,11 @@
 import math
 import re
+import utils
 
 class Board:
   def __init__(self, cols, rows):
     self.cell = initCell(cols, rows)
+    self.excell = initExcell(cols, rows)
     self.border = initBorder(cols, rows)
     self.cols = cols
     self.rows = rows
@@ -39,15 +41,15 @@ class Base:
     bd = self.board
     for i in range(len(bstr)):
       ca = bstr[i]
-      if include(ca, "0", "4"):
+      if utils.include(ca, "0", "4"):
         bd.cell[c] = int(ca, 16)
-      elif include(ca, "5", "9"):
+      elif utils.include(ca, "5", "9"):
         bd.cell[c] = int(ca, 16) - 5
         c += 1
-      elif include(ca, "a", "e"):
+      elif utils.include(ca, "a", "e"):
         bd.cell[c] = int(ca,16)-10
         c += 2
-      elif include(ca, "g", "z"):
+      elif utils.include(ca, "g", "z"):
         c += int(ca, 36) - 16
       elif ca == ".":
         bd.cell[c] = -2
@@ -62,7 +64,7 @@ class Base:
       i = 0
       for i in range(len(bstr)):
           ca = bstr[i]
-          if include(ca, "0", "9") or include(ca, "a", "f"):
+          if utils.include(ca, "0", "9") or utils.include(ca, "a", "f"):
               self.board.cell[c] = int(ca, 16)
           elif ca == "-":
               self.board.cell[c] = int(bstr[i+1,i+1+2], 16)
@@ -109,13 +111,12 @@ class Base:
           self.board.border[0][id_ / self.rows][id_ % self.rows] = 1 if ca & twi[w] != 0 else 0
           id_ += 1
     self.body = self.body[pos2:]
-  
-
-def include(ca, bottom, up):
-    return bottom <= ca and ca <= up
 
 def initCell(cols, rows):
     return [None for i in range(cols*rows)]
+
+def initExcell(cols, rows):
+    return [None for i in range(2*cols + 2*rows)]
 
 def initBorder(cols, rows):
     horizontals = [[False for c in range(cols)] for r in range(rows-1)]

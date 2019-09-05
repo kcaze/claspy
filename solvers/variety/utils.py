@@ -1,5 +1,8 @@
 from claspy import *
 
+def include(ca, bottom, up):
+    return bottom <= ca and ca <= up
+
 def makeGrid(w, h, fn):
   return [[fn() for i in range(w)] for j in range(h)]
 
