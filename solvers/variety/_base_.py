@@ -112,6 +112,20 @@ class Base:
           id_ += 1
     self.body = self.body[pos2:]
 
+  def decodeCircle(self):
+    bstr = self.body
+    c = 0
+    tri = [9,3,1]
+    pos = min((self.cols*self.rows+2)/3, len(bstr))
+    for i in range(pos):
+      ca = int(bstr[i],27)
+      for w in range(3):
+        val = (ca/tri[w])%3
+        if val > 0:
+          self.board.cell[c] = val
+        c += 1
+    self.body = self.body[pos:]
+
 def initCell(cols, rows):
     return [None for i in range(cols*rows)]
 

@@ -3,6 +3,7 @@ from _base_ import parseURL
 import akari
 import building
 import hashi
+import mashu
 import slither
 import starbattle
 import sudoku
@@ -11,6 +12,7 @@ solvers = {
   'akari': akari.Akari,
   'building': building.Building,
   'hashi': hashi.Hashi,
+  'mashu': mashu.Mashu,
   'slither': slither.Slither,
   'starbattle': starbattle.Starbattle,
   'sudoku': sudoku.Sudoku,
