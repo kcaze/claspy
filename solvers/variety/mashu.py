@@ -6,7 +6,7 @@ class Mashu(Base):
   def _solve(self):
     horizontalFences = utils.makeGrid(self.cols-1, self.rows, lambda: BoolVar())
     verticalFences = utils.makeGrid(self.rows-1, self.cols, lambda: BoolVar())
-    utils.require_single_closed_loop(horizontalFences, verticalFences)
+    dbg = utils.require_single_closed_loop_v2(horizontalFences, verticalFences)
 
     def getHori(x,y):
       if y < 0 or y >= self.rows:

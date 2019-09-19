@@ -3,6 +3,14 @@ from claspy import *
 def include(ca, bottom, up):
     return bottom <= ca and ca <= up
 
+def idx(arr, y, x, default):
+  if y < 0 or y >= len(arr):
+    return default
+  arr = arr[y]
+  if x < 0 or x >= len(arr):
+    return default
+  return arr[x]
+
 def makeGrid(w, h, fn):
   return [[fn() for i in range(w)] for j in range(h)]
 
@@ -71,3 +79,52 @@ def require_single_closed_loop(h, v):
       require(cw[y][x] == ((edges[0] & ((~outside[y][x] & edges[1]) | (~outside[y+1][x] & edges[3]))) | (edges[2] & ((~outside[y][x+1] & edges[1]) | (~outside[y+1][x+1] & edges[3])))))
       require(ccw[y][x] == ((edges[0] & ((outside[y][x] & edges[1]) | (outside[y+1][x] & edges[3]))) | (edges[2] & ((outside[y][x+1] & edges[1]) | (outside[y+1][x+1] & edges[3])))))
   require(sum_vars(sum(cw,[])) - sum_vars(sum(ccw,[])) == 4)
+
+def require_single_closed_loop_v2(h, v):
+  width = len(v)-1
+  height = len(h)-1
+  # Require that each intersection point has either 2 or 0 edges connecting to it.
+  # This constraint guarantees that the edges form closed loop(s) that don't self-intersect.
+  for y in range(height+1):
+    for x in range(width+1):
+      edges = [
+        h[y][x-1] if x > 0 else False,
+        h[y][x] if x < width else False,
+        v[x][y-1] if y > 0 else False,
+        v[x][y] if y < height else False,
+      ]
+      require(sum_bools(2, edges) | sum_bools(0, edges))
+
+  # Atom's for proving connectivity
+  connectedH = makeGrid(len(h[0]), len(h), lambda: Atom())
+  connectedV = makeGrid(len(v[0]), len(v), lambda: Atom())
+  for y in range(len(h)):
+    for x in range(len(h[0])):
+      H = connectedH[y][x]
+      H.prove_if(h[y][x] &
+        (idx(connectedH, y, x-1, False) |
+        idx(connectedH, y, x+1, False) |
+        idx(connectedV, x, y, False) |
+        idx(connectedV, x, y-1, False) |
+        idx(connectedV, x+1, y, False) |
+        idx(connectedV, x+1, y-1, False)))
+      require(h[y][x] == H)
+  for x in range(len(v)):
+    for y in range(len(v[0])):
+      V = connectedV[x][y]
+      V.prove_if(v[x][y] &
+        (idx(connectedV, x, y-1, False) |
+        idx(connectedV, x, y+1, False) |
+        idx(connectedH, y, x, False) |
+        idx(connectedH, y, x-1, False) |
+        idx(connectedH, y+1, x, False) |
+        idx(connectedH, y+1, x-1, False))) 
+      require(v[x][y] == V)
+  # Use the smallest idx in connectedH to start the proof chain
+  startingConnectedHIdx = IntVar(0, len(h[0])*len(h))
+  for y in range(len(h)):
+    for x in range(len(h[0])):
+      i = y*len(h[0])+x
+      require(cond(h[y][x], startingConnectedHIdx <= i, True))
+      connectedH[y][x].prove_if(h[y][x] & (startingConnectedHIdx == i))
+  return connectedH

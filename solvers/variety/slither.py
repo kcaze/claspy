@@ -10,7 +10,7 @@ class Slither(Base):
     horizontalFences = utils.makeGrid(self.cols, self.rows+1, lambda: BoolVar())
     verticalFences = utils.makeGrid(self.rows, self.cols+1, lambda: BoolVar())
 
-    utils.require_single_closed_loop(horizontalFences, verticalFences)
+    utils.require_single_closed_loop_v2(horizontalFences, verticalFences)
    
     # Require numbers are surrounded by that many fences.
     for y in range(self.rows):
