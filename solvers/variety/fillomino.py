@@ -43,13 +43,21 @@ class Fillomino(Base):
     for y in range(self.rows):
       for x in range(self.cols):
         if y-1 >= 0:
-          require(cond(flow[y][x] == '^', ans[y][x] == ans[y-1][x], True))
+          require(cond(flow[y][x] == '^', edgesVertical[y-1][x], True))
+        else:
+          require(flow[y][x] != '^') 
         if y+1 < self.rows:
-          require(cond(flow[y][x] == 'v', ans[y][x] == ans[y+1][x], True))
+          require(cond(flow[y][x] == 'v', edgesVertical[y][x], True))
+        else:
+          require(flow[y][x] != 'v')
         if x-1 >= 0:
-          require(cond(flow[y][x] == '<', ans[y][x] == ans[y][x-1], True))
+          require(cond(flow[y][x] == '<', edgesHorizontal[y][x-1], True))
+        else:
+          require(flow[y][x] != '<')
         if x+1 < self.cols:
-          require(cond(flow[y][x] == '>', ans[y][x] == ans[y][x+1], True))
+          require(cond(flow[y][x] == '>', edgesHorizontal[y][x], True))
+        else:
+          require(flow[y][x] != '>')
     # Require each cell connected to a root
     connected = utils.makeGrid(self.cols, self.rows, lambda: Atom())
     for y in range(self.rows):
@@ -80,10 +88,11 @@ class Fillomino(Base):
         require(counts[y][x] == count)
         require(~((flow[y][x] == '.')^(counts[y][x] == ans[y][x])))
     # Ensure different groups with the same number don't touch
-    rootIdxs = utils.makeGrid(self.cols, self.rows, lambda: IntVar())
+    rootIdxs = [[IntVar(0,y*self.cols+x) for x in range(self.cols)] for y in range(self.rows)]
     for y in range(self.rows):
       for x in range(self.cols):
         require(~((flow[y][x]=='.')^(rootIdxs[y][x] == y*self.cols+x)))
+        #require(rootIdxs[y][x] <= y*self.cols+x)
         if y-1 >= 0:
           require(~((ans[y][x]==ans[y-1][x])^(rootIdxs[y][x]==rootIdxs[y-1][x])))
         if y+1 < self.rows:
@@ -93,7 +102,7 @@ class Fillomino(Base):
         if x+1 < self.cols:
           require(~((ans[y][x]==ans[y][x+1])^(rootIdxs[y][x]==rootIdxs[y][x+1])))
 
-    num_solutions = solve(quiet=True)
+    num_solutions = solve(quiet=False)
     solution = [utils.intify(ans[i/self.cols][i%self.cols]) for i in range(self.rows*self.cols)]
     return (num_solutions, solution)
 
