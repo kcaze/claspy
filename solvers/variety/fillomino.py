@@ -4,7 +4,7 @@ import utils
 class Fillomino(Base):
   def _solve(self):
     set_max_val(self.rows*self.cols)
-    ans = utils.makeGrid(self.cols, self.rows, lambda: IntVar(1,self.rows*self.cols))
+    ans = utils.makeGrid(self.cols, self.rows, lambda: IntVar())
     for y in range(self.rows):
       for x in range(self.cols):
         if self.board.getCell(x,y) != None:
@@ -92,7 +92,6 @@ class Fillomino(Base):
     for y in range(self.rows):
       for x in range(self.cols):
         require(~((flow[y][x]=='.')^(rootIdxs[y][x] == y*self.cols+x)))
-        #require(rootIdxs[y][x] <= y*self.cols+x)
         if y-1 >= 0:
           require(~((ans[y][x]==ans[y-1][x])^(rootIdxs[y][x]==rootIdxs[y-1][x])))
         if y+1 < self.rows:
@@ -102,7 +101,7 @@ class Fillomino(Base):
         if x+1 < self.cols:
           require(~((ans[y][x]==ans[y][x+1])^(rootIdxs[y][x]==rootIdxs[y][x+1])))
 
-    num_solutions = solve(quiet=False)
+    num_solutions = solve(quiet=True)
     solution = [utils.intify(ans[i/self.cols][i%self.cols]) for i in range(self.rows*self.cols)]
     return (num_solutions, solution)
 
