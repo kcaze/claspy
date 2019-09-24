@@ -67,16 +67,16 @@ class Base:
           if utils.include(ca, "0", "9") or utils.include(ca, "a", "f"):
               self.board.cell[c] = int(ca, 16)
           elif ca == "-":
-              self.board.cell[c] = int(bstr[i+1,i+1+2], 16)
+              self.board.cell[c] = int(bstr[i+1:i+1+2], 16)
               i += 2
           elif ca == "+":
-              self.board.cell[c] = int(bstr[i+1,i+1+3], 16)
+              self.board.cell[c] = int(bstr[i+1:i+1+3], 16)
               i += 3
           elif ca == "=":
-              self.board.cell[c] = int(bstr[i+1,i+1+3], 16) + 4096
+              self.board.cell[c] = int(bstr[i+1:i+1+3], 16) + 4096
               i += 3
           elif ca == "%":
-              self.board.cell[c] = int(bstr[i+1,i+1+3], 16) + 8192
+              self.board.cell[c] = int(bstr[i+1:i+1+3], 16) + 8192
               i += 3
           elif ca == ".":
               self.board.cell[c] = -2
