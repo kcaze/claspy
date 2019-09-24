@@ -5,6 +5,7 @@ import building
 import fillomino
 import hashi
 import mashu
+import nurikabe
 import slither
 import starbattle
 import sudoku
@@ -15,6 +16,7 @@ solvers = {
   'fillomino': fillomino.Fillomino,
   'hashi': hashi.Hashi,
   'mashu': mashu.Mashu,
+  'nurikabe': nurikabe.Nurikabe,
   'slither': slither.Slither,
   'starbattle': starbattle.Starbattle,
   'sudoku': sudoku.Sudoku,

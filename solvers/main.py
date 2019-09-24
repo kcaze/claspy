@@ -5,7 +5,7 @@ import sys
 
 import variety
 
-TIMEOUT = 10
+TIMEOUT = 15
 def handle_timeout(_signum, _frame):
   os.killpg(0, signal.SIGKILL)
 os.setpgrp()
