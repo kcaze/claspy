@@ -6,10 +6,9 @@ def include(ca, bottom, up):
 def idx(arr, y, x, default):
   if y < 0 or y >= len(arr):
     return default
-  arr = arr[y]
-  if x < 0 or x >= len(arr):
+  if x < 0 or x >= len(arr[y]):
     return default
-  return arr[x]
+  return arr[y][x]
 
 def makeGrid(w, h, fn):
   return [[fn() for i in range(w)] for j in range(h)]
