@@ -62,7 +62,7 @@ class Base:
       bstr = self.body
       c = 0
       i = 0
-      for i in range(len(bstr)):
+      while i < len(bstr):
           ca = bstr[i]
           if utils.include(ca, "0", "9") or utils.include(ca, "a", "f"):
               self.board.cell[c] = int(ca, 16)
@@ -85,6 +85,7 @@ class Base:
           c += 1
           if c >= len(self.board.cell):
               break
+          i += 1
       self.body = self.body[i+1:]
 
   def decodeBorder(self):

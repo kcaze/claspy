@@ -6,7 +6,7 @@ class Nurikabe(Base):
   def _solve(self):
     set_max_val(self.rows*self.cols)
     ans = [[] for i in range(self.rows)]
-    values = ['*']
+    values = []
     for y in range(self.rows):
       for x in range(self.cols):
         cell = self.board.getCell(x,y)
@@ -16,7 +16,8 @@ class Nurikabe(Base):
       for x in range(self.cols):
         cell = self.board.getCell(x,y)
         if cell == None:
-          ans[y].append(MultiVar(*values))
+          possibleValues = ['*'] + [v for v in values if (abs(x-(v%self.cols)) + abs(y-int(v/self.cols))) < self.board.getCell(v%self.cols, int(v/self.cols))]
+          ans[y].append(MultiVar(*possibleValues))
         else:
           ans[y].append(y*self.cols+x)
 
@@ -65,11 +66,12 @@ class Nurikabe(Base):
           islandConnected[y][x].prove_if((ans[y][x]==ans[y][x+1]) & islandConnected[y][x+1])
 
     # Require numbers equal island sizes
-    for v in values[1:]:
+    for v in values:
       y = int(v / self.cols)
       x = v % self.cols 
       c = self.board.getCell(x,y)
-      require(sum_bools(c, [ans[int(i/self.cols)][i%self.cols] == v for i in range(self.rows*self.cols)]))
+      cells = [ans[int(i/self.cols)][i%self.cols] == v for i in range(self.rows*self.cols) if abs(x-(i%self.cols)) + abs(y-int(i/self.cols)) < c]
+      require(sum_bools(c, cells))
 
     # Ensure different groups with the same number don't touch
     for y in range(self.rows):
