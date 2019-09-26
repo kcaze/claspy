@@ -10,6 +10,7 @@ import slither
 import starbattle
 import sudoku
 import tapa
+import yajilin
 
 solvers = {
   'akari': akari.Akari,
@@ -22,6 +23,7 @@ solvers = {
   'starbattle': starbattle.Starbattle,
   'sudoku': sudoku.Sudoku,
   'tapa': tapa.Tapa,
+  'yajilin': yajilin.Yajilin,
 }
 
 def getPid(url):

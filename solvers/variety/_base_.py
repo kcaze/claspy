@@ -113,6 +113,31 @@ class Base:
           id_ += 1
     self.body = self.body[pos2:]
 
+  def decodeArrowNumber16(self):
+    c = 0
+    i = 0
+    bstr = self.body
+    while i < len(bstr):
+      ca = bstr[i]
+      if utils.include(ca, "0", "4"):
+        ca1 = bstr[i+1]
+        self.board.cell[c] = (int(ca,16), int(ca1,16) if ca1 != "." else -2)
+        i += 1
+      elif utils.include(ca, "5", "9"):
+        self.board.cell[c] = (int(ca,16) - 5, int(bstr[i+1:i+1+2],16))
+        i += 2
+      elif ca == "-":
+        self.board.cell[c] = (int(bstr[i+1:i+1+1],16), int(bstr[i+2:i+2+3],16))
+        i += 4
+      elif ca >= "a" and ca <= "z":
+        c += int(ca,36)-10
+      c += 1
+      if c >= self.rows*self.cols:
+        break
+      i += 1
+    self.body = bstr[i+1:]
+      
+
   def decodeCircle(self):
     bstr = self.body
     c = 0
